@@ -39,12 +39,12 @@ export class AddItemToOrder {
         if (!orderResult.isSuccess) return err(new NotFoundError('Order not found'));
 
 
-        const order = orderResult.getOrThrow();
+        const order = orderResult.data;
 
       const priceResult = await this.pricing.getPrice(productSku);
-      if (!priceResult) return err(new NotFoundError('Price not found for product SKU'));
+      if (!priceResult.isSuccess) return err(new NotFoundError('Price not found for product SKU'));
         
-      const unitPrice = priceResult.getOrThrow();
+      const unitPrice = priceResult.data;
 
       const item = new OrderItem(productSku, unitPrice, quantity, orderSku);
 

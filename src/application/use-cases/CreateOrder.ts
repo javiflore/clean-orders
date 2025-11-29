@@ -25,7 +25,7 @@ export class CreateOrder {
             return err(new ValidationError({ field: 'orderSku' }, 'orderSku is required'));
         }
 
-        const existing = await this.orderRepo.findById(order.id);
+        const existing = await this.orderRepo.findById(order.getSku());
         if (existing) {
             return err(new ConflictError('Order already exists'));
         }

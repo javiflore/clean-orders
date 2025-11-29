@@ -11,7 +11,7 @@ export class OrderItem {
     public readonly orderSku: Sku,
   ) {
     // invariants
-    if (this.unitPrice.cents < 0) {
+    if (this.unitPrice.amount < 0) {
       throw new Error('Unit price cannot be negative');
     }
   }

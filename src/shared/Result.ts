@@ -1,61 +1,41 @@
 import { AppError } from "../application/errors/AppError.js";
 
-export type Result<T, E = AppError> = Success<T> | Failure<E>;
+export type Result<T, E > = 
+    | { success: true; data: T; isSuccess:true; isFailure: false; value: T }
+    | { success: false; error: E; isSuccess:false; isFailure: true };
 
-export class Success<T> {
-  readonly kind = 'success' as const;
 
-  constructor(readonly value: T) {}
+export const ok = <T>(value: T): Result<T, never> => ({
+    success: true,
+    data: value,
+    isSuccess: true,
+    isFailure: false,
+    value
+})
 
-  isSuccess(): this is Success<T> {
-    return true;
-  }
+export const err = <E>(error: E): Result<never, E> => ({
+  success: false,
+  error,
+  isSuccess: false,
+  isFailure: true,
+});
 
-  isFailure(): this is Failure<never> {
-    return false;
-  }
+export const isOk = <T, E>(result: Result<T, E>): result is { success: true; data: T; isSuccess: true; isFailure: false, value: T } =>
+  result.isSuccess;
 
-  map<U>(fn: (value: T) => U): Result<U, never> {
-    return new Success(fn(this.value));
-  }
+export const isErr = <T, E>(result: Result<T, E>): result is { success: false; error: E; isSuccess: false; isFailure: true } =>
+  result.isFailure;
 
-  flatMap<U, E>(fn: (value: T) => Result<U, E>): Result<U, E> {
-    return fn(this.value);
-  }
+// unwrap safe
+export const unwrap = <T, E>(result: Result<T, E>, defaultValue: T): T =>
+  isOk(result) ? result.value : defaultValue;
 
-  getOrThrow(): T {
-    return this.value;
-  }
-}
+export const unwrapErr = <T, E>(result: Result<T, E>, defaultError: E): E =>
+  isErr(result) ? result.error : defaultError;
 
-export class Failure<E> {
-  readonly kind = 'failure' as const;
+// map / flatMap
+export const map = <T, E, U>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> =>
+  isOk(result) ? ok(fn(result.value)) : result;
 
-  constructor(readonly error: E) {}
-
-  isSuccess(): this is Success<never> {
-    return false;
-  }
-
-  isFailure(): this is Failure<E> {
-    return true;
-  }
-
-  map<U>(fn: (value: never) => U): Result<U, E> {
-    return this as any;
-  }
-
-  flatMap<U>(fn: (value: never) => Result<U, E>): Result<U, E> {
-    return this as any;
-  }
-
-  getOrThrow(): never {
-    if (this.error instanceof Error) {
-      throw this.error;
-    }
-    throw new Error(String(this.error));
-  }
-}
-
-export const ok = <T>(value: T): Result<T> => new Success(value);
-export const err = <E>(error: E): Result<never, E> => new Failure(error);
+export const flatMap = <T, E, U>(result: Result<T, E>, fn: (value: T) => Result<U, E>): Result<U, E> =>
+  isOk(result) ? fn(result.value) : result;

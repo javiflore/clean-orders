@@ -2,16 +2,23 @@ import { OrderId } from '../value-objects/OrderId.js';
 import { OrderItem } from '../OrderItem.js';
 import { Money } from '../value-objects/Money.js';
 import { Sku } from '../value-objects/Sku.js';
+import { DomainEvent } from '../events/DomainEvent.js';
 
 export class Order {
+  private sku: Sku;
   private items: OrderItem[] = [];
-  private events: any[] = [];
+  private events: DomainEvent[] = [];
 
-  private constructor(public readonly id: OrderId, public readonly createdAt: string = new Date().toISOString()) {}
+  constructor(
+    sku: Sku
+  ) {
+    this.sku = sku;
+    this.events.push(OrderCreated(sku.toString()));
+  }
 
   static create(id: Sku): Order {
     const order = new Order(id);
-    order.recordEvent(makeOrderCreated(id.toString()));
+    order.recordEvent(OrderCreated(id.toString()));
     return order;
   }
 
@@ -19,13 +26,17 @@ export class Order {
     this.items.push(item);
     this.recordEvent(
       makeItemAdded({
-        orderId: this.id.toString(),
+        orderId: this.sku.toString(),
         productId: item.productSku.toString(),
         sku: item.orderSku ? item.orderSku.toString() : undefined,
-        unitPrice: { cents: item.unitPrice.cents, currency: item.unitPrice.currency.code },
+        unitPrice: { cents: item.unitPrice.amount, currency: item.unitPrice.currency.code },
         quantity: item.quantity.value,
       }),
     );
+  }
+
+  getSku(): Sku {
+    return this.sku;
   }
 
   getItems(): ReadonlyArray<OrderItem> {
@@ -57,7 +68,8 @@ export class Order {
     this.events.push(e);
   }
 }
-function makeOrderCreated(arg0: string): any {
+
+function OrderCreated(arg0: string): any {
   throw new Error('Function not implemented.');
 }
 

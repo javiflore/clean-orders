@@ -1,11 +1,17 @@
 import { Currency } from "./Currency.js";
 
 export class Money {
-  // store in cents to avoid floating point errors
-  constructor(public readonly cents: number, public readonly currency: Currency) {
-    if (!Number.isInteger(cents) || cents < 0) {
+
+    private readonly _amount: number;
+    private readonly _currency: Currency;
+
+
+  constructor(amount: number, currency: Currency) {
+    if (amount < 0 || !Number.isFinite(amount)) {
       throw new Error('Money cents must be a non-negative integer');
     }
+    this._amount = Math.round(amount * 100)/100;
+    this._currency = currency;
   }
 
   static fromDecimal(amount: number, currency: Currency): Money {
@@ -16,29 +22,30 @@ export class Money {
     return new Money(cents, currency);
   }
 
-  add(other: Money): Money {
-    if (this.currency.code !== other.currency.code) {
-      throw new Error('Cannot add Money with different currencies');
+    get amount(): number {
+        return this._amount;
     }
-    return new Money(this.cents + other.cents, this.currency);
-  }
 
-  multiply(multiplier: number): Money {
-    if (!Number.isInteger(multiplier) || multiplier < 0) {
-      throw new Error('Multiplier must be a non-negative integer');
+    get currency(): Currency {
+        return this._currency;
     }
-    return new Money(this.cents * multiplier, this.currency);
-  }
 
-  toDecimal(): number {
-    return this.cents / 100;
-  }
+    add(other: Money): Money {
+        if (this.currency.code !== other.currency.code) {
+            throw new Error('Cannot add Money with different currencies');
+        }
+        return new Money(this.amount + other.amount, this.currency);
+    }
 
-  equals(other: Money): boolean {
-    return this.currency.code === other.currency.code && this.cents === other.cents;
-  }
+    multiply(factor: number): Money {
+        if (!Number.isFinite(factor) || factor < 0) {
+            throw new Error('Factor must be a non-negative number');
+        }
+        return new Money(this.amount * factor, this.currency);
+    }   
 
-  toString(): string {
-    return `${(this.cents / 100).toFixed(2)} ${this.currency.code}`;
-  }
+    equals(other: Money): boolean {
+        return this.amount === other.amount && this.currency.code === other.currency.code;
+    }
+
 }
