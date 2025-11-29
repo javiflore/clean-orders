@@ -1,4 +1,6 @@
-export type Result<T, E = Error> = Success<T> | Failure<E>;
+import { AppError } from "../application/errors/AppError.js";
+
+export type Result<T, E = AppError> = Success<T> | Failure<E>;
 
 export class Success<T> {
   readonly kind = 'success' as const;

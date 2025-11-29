@@ -204,3 +204,44 @@ npm test
 4. **Escribir tests** con Vitest
 5. **Compilar** con `npm run build` cuando esté listo para producción
 6. **Hacer commit** con `git add .` y `git commit -m "Initial setup"`
+
+## Implementación del Dominio (hecho)
+
+He implementado el modelo de dominio del dominio de pedidos y lo he añadido bajo `src/domain`:
+
+- `src/domain/value-objects/OrderId.ts` — Value object para identificador de pedido (no vacío).
+- `src/domain/value-objects/ProductId.ts` — Value object para identificador de producto (no vacío).
+- `src/domain/value-objects/Currency.ts` — Value object para código de moneda ISO-4217 (3 letras mayúsculas).
+- `src/domain/value-objects/Money.ts` — Representación en centavos (`cents`) y operaciones (`add`, `multiply`, `fromDecimal`, `toDecimal`).
+- `src/domain/value-objects/Quantity.ts` — Cantidad (entero positivo).
+- `src/domain/OrderItem.ts` — Entidad ligera que agrupa `ProductId`, `unitPrice: Money` y `quantity: Quantity` y calcula `total()`.
+- `src/domain/Order.ts` — Aggregate root `Order` con métodos:
+  - `static create(orderId: OrderId)` — crea y registra evento `OrderCreated`.
+  - `addItem(item: OrderItem)` — añade item y registra evento `ItemAdded`.
+  - `getItems()` — retorna items (solo lectura).
+  - `totalsByCurrency()` — suma los totales por moneda y devuelve `Record<string, Money>`.
+  - `pullEvents()` — recupera y limpia los eventos producidos por la agregación.
+- `src/domain/events/*` — eventos de dominio (`DomainEvent`, `OrderCreated`, `ItemAdded`) con payloads claros.
+
+Ejemplo corto de uso (puro dominio, sin IO):
+```ts
+import { Order } from './src/domain/Order';
+import { OrderId } from './src/domain/value-objects/OrderId';
+import { ProductId } from './src/domain/value-objects/ProductId';
+import { Currency } from './src/domain/value-objects/Currency';
+import { Money } from './src/domain/value-objects/Money';
+import { Quantity } from './src/domain/value-objects/Quantity';
+import { OrderItem } from './src/domain/OrderItem';
+
+const order = Order.create(new OrderId('order-1'));
+const usd = new Currency('USD');
+const item = new OrderItem(new ProductId('p-1'), Money.fromDecimal(12.5, usd), new Quantity(2));
+order.addItem(item);
+console.log(order.totalsByCurrency()); // { USD: Money }
+console.log(order.pullEvents()); // eventos OrderCreated, ItemAdded
+```
+
+Notas:
+- El patrón `Money` usa enteros (`cents`) para evitar errores de coma flotante.
+- `totalsByCurrency()` permite sumar items en monedas distintas y obtener un resumen por código de moneda.
+- No hay IO ni dependencias externas; el dominio es puro y testeable.
