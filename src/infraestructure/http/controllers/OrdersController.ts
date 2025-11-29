@@ -37,7 +37,7 @@ export class OrdersController {
         const dto: CreateOrderDTO = {
             orderSku: request.body.orderSku,
         };
-
+        console.log('Received create order request:', dto);
         const result = await this.createOrderUseCase.execute(dto);
 
         if (result.success) {

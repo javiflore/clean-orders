@@ -1,21 +1,21 @@
 import { DomainEvent } from "./DomainEvent.js";
 
-export class ItemAddedToOrder extends DomainEvent {
+export class ItemAdded extends DomainEvent {
 
     readonly productSKU: string;
-    readonly unitPrice: { cents: number; currency: string };
+    readonly unitPrice: number;
     readonly quantity: number;
     readonly currency: string;
 
     constructor(orderSKU: string,
         productSKU: string,
-        unitPriceCents: number,
+        unitPrice: number,
         quantity: number,
         currency: string
     ) {
         super(orderSKU);
         this.productSKU = productSKU;
-        this.unitPrice = { cents: unitPriceCents, currency };
+        this.unitPrice = unitPrice;
         this.quantity = quantity;
         this.currency = currency;
     }

@@ -3,6 +3,8 @@ import { OrderItem } from '../OrderItem.js';
 import { Money } from '../value-objects/Money.js';
 import { Sku } from '../value-objects/Sku.js';
 import { DomainEvent } from '../events/DomainEvent.js';
+import { OrderCreated } from '../events/OrderCreated.js';
+import { ItemAdded } from '../events/ItemAdded.js';
 
 export class Order {
   private sku: Sku;
@@ -13,25 +15,25 @@ export class Order {
     sku: Sku
   ) {
     this.sku = sku;
-    this.events.push(OrderCreated(sku.toString()));
+    this.events.push(new OrderCreated(sku.toString()));
   }
 
   static create(id: Sku): Order {
     const order = new Order(id);
-    order.recordEvent(OrderCreated(id.toString()));
+    order.recordEvent(new OrderCreated(id.toString()));
     return order;
   }
 
   addItem(item: OrderItem): void {
     this.items.push(item);
     this.recordEvent(
-      makeItemAdded({
-        orderId: this.sku.toString(),
-        productId: item.productSku.toString(),
-        sku: item.orderSku ? item.orderSku.toString() : undefined,
-        unitPrice: { cents: item.unitPrice.amount, currency: item.unitPrice.currency.code },
-        quantity: item.quantity.value,
-      }),
+      new ItemAdded(
+      this.sku.toString(),
+      item.productSku.toString(), 
+      item.unitPrice.amount,
+      item.quantity.value, 
+      item.unitPrice.currency.code 
+    ),
     );
   }
 
@@ -68,12 +70,5 @@ export class Order {
     this.events.push(e);
   }
 }
-
-function OrderCreated(arg0: string): any {
-  throw new Error('Function not implemented.');
-}
-
-function makeItemAdded(arg0: { orderId: string; productId: any; sku: any; unitPrice: { cents: any; currency: any; }; quantity: any; }): any {
-  throw new Error('Function not implemented.');
-}
+ 
 

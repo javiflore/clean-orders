@@ -20,7 +20,7 @@ export class CreateOrder {
 
     try {
         const order = Order.create(new Sku(dto.orderSku));
-
+        console.log('Created order:', order);
         if (!dto.orderSku) {
             return err(new ValidationError({ field: 'orderSku' }, 'orderSku is required'));
         }
