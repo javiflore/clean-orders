@@ -1,5 +1,5 @@
 import { OrderId } from '../value-objects/OrderId.js';
-import { OrderItem } from '../OrderItem.js';
+import { OrderItem } from '../value-objects/OrderItem.js';
 import { Money } from '../value-objects/Money.js';
 import { Sku } from '../value-objects/Sku.js';
 import { DomainEvent } from '../events/DomainEvent.js';

@@ -1,6 +1,6 @@
-import { Money } from "./value-objects/Money.js";
-import { Quantity } from "./value-objects/Quantity.js";
-import { Sku } from "./value-objects/Sku.js";
+import { Money } from "./Money.js";
+import { Quantity } from "./Quantity.js";
+import { Sku } from "./Sku.js";
 
 
 export class OrderItem {

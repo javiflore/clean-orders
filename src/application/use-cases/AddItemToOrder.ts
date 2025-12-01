@@ -1,7 +1,7 @@
 
 import { Quantity } from '../../domain/value-objects/Quantity.js';
 import { Sku } from '../../domain/value-objects/Sku.js';
-import { OrderItem } from '../../domain/OrderItem.js';
+import { OrderItem } from '../../domain/value-objects/OrderItem.js';
 import { AppError, InfraError, NotFoundError, ValidationError } from '../errors/AppError.js';
 import { err, ok, Result } from '@/src/shared/Result.js';
 import { OrderRepository } from '../ports/OrderRepository.js';

@@ -33,5 +33,14 @@ export class InMemoryOrderRepository implements OrderRepository {
     return ok<Order>(order);
   }
 
-  
+   // 🔑 MÉTODO SEED para tests de aceptación
+  seed(order: Order): void {
+    const key = this.getKey(order.getSku());
+    this.orders.set(key, order);
+  }
+
+  // Opcional: limpiar para tests independientes
+  clear(): void {
+    this.orders.clear();
+  }
 }
