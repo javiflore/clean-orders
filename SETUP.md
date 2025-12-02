@@ -245,3 +245,40 @@ Notas:
 - El patrón `Money` usa enteros (`cents`) para evitar errores de coma flotante.
 - `totalsByCurrency()` permite sumar items en monedas distintas y obtener un resumen por código de moneda.
 - No hay IO ni dependencias externas; el dominio es puro y testeable.
+
+## Capa de Aplicación (errores, puertos, DTOs y casos de uso)
+
+He añadido una capa de aplicación con errores especializados, puertos (interfaces) para dependencias externas y dos casos de uso:
+
+- **Errores** (`src/application/errors`):
+  - `AppError` (base)
+  - `ValidationError`
+  - `NotFoundError`
+  - `ConflictError`
+  - `InfraError`
+
+- **Puertos** (`src/application/ports`): interfaces que representan dependencias externas:
+  - `OrderRepository` — `findById(id): Promise<Order|null>` y `save(order): Promise<void>`
+  - `PricingService` — `getPrice(productId, currency): Promise<Money>`
+  - `EventBus` — `publish(event): Promise<void>`
+  - `Clock` — `now(): string` (ISO timestamp)
+
+- **DTOs** (`src/application/dtos`):
+  - `CreateOrderDTO` — `{ orderId: string }`
+  - `AddItemToOrderDTO` — `{ orderId, productId, sku?, quantity, unitPrice? }`
+
+- **Casos de uso** (`src/application/use-cases`):
+  - `CreateOrder` — crea un pedido si no existe; devuelve `Result<void, ConflictError|InfraError|ValidationError>`
+  - `AddItemToOrder` — añade un item al pedido (crea `OrderItem` con `Sku` opcional); devuelve `Result<void, NotFoundError|ValidationError|InfraError|ConflictError>`
+
+Los casos de uso devuelven el tipo `Result` (`ok` o `err`) desde `src/shared/Result.ts` y, en caso de error, retornan instancias de los errores discriminados (cada error tiene la propiedad `type` para distinguirlo).
+
+La capa de aplicación no realiza IO por sí misma: las dependencias externas quedan expresadas como puertos y deben ser implementadas por la infraestructura (repositorios, servicios de precio, bus de eventos).
+
+
+
+
+
+
+
+- añadimos postgres, pino ,pino-pretty, dotenv y zod
