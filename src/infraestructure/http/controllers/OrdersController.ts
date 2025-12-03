@@ -4,6 +4,8 @@ import { AppError } from "@/src/application/errors/AppError.js";
 import { AddItemToOrder } from "@/src/application/use-cases/AddItemToOrder.js";
 import { CreateOrder } from "@/src/application/use-cases/CreateOrder.js";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { Logger } from "@/src/application/ports/Logger.js";
+import { randomUUID } from "crypto";
 
 interface CreateOrderRequest {
     orderSku: string;
@@ -23,6 +25,7 @@ export class OrdersController {
     constructor(
         private readonly createOrderUseCase: CreateOrder,
         private readonly addItemToOrderUseCase: AddItemToOrder,
+        private readonly logger: Logger
     ) {}
 
     async registerRoutes(fastify: FastifyInstance): Promise<void> {
@@ -34,6 +37,15 @@ export class OrdersController {
         request: FastifyRequest<{ Body: CreateOrderRequest }>,
         reply: FastifyReply
     ): Promise<void> {
+
+        const requestId = randomUUID();
+        const logger = this.logger.child({ 
+            requestId, 
+            method: request.method,
+            route: request.url,
+        });
+
+
         const dto: CreateOrderDTO = {
             orderSku: request.body.orderSku,
         };
