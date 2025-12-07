@@ -15,4 +15,4 @@ services:
 
 volumes:
   postgres_data:
-    driver: {}
+    driver: local

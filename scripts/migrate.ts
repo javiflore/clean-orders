@@ -79,7 +79,11 @@ async function migrate() {
       `;
 
       await tx`
-        CREATE TRIGGER IF NOT EXISTS update_orders_updated_at
+        DROP TRIGGER IF EXISTS update_orders_updated_at ON orders;
+      `;
+
+      await tx`
+        CREATE TRIGGER update_orders_updated_at
         BEFORE UPDATE ON orders
         FOR EACH ROW EXECUTE FUNCTION refresh_updated_at_column();
       `;
@@ -94,9 +98,10 @@ async function migrate() {
   }
 }
 
-// Ejecutar si se llama directamente
-if (import.meta.url === fileURLToPath(import.meta.resolve('./'))) {
-  migrate();
-}
+// Ejecutar directamente
+migrate().catch((error) => {
+  console.error('❌ Fatal error:', error);
+  process.exit(1);
+});
 
 export { migrate };
